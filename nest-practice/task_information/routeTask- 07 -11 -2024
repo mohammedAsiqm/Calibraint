@@ -1,0 +1,32 @@
+Implemented Protected and unprotected routes with small sigin logic.
+
+github repo url : https://github.com/mohammedAsiqm/Calibraint.git
+
+baseURL = http://localhost:3000
+
+1. (POST) /users/register - this route is unprotected route. you can add users using this route. User will store in node memory. Not DB
+
+body : 
+    {
+    "name" : string,
+    "age" : number,
+    "email" : string,
+    "password" : string
+}
+
+
+2. (POST) /users/auth/signin - this route is unprotected route. You will get token for protected route using credentials
+
+body : {
+    "email" : string,
+    "password" : string
+}
+
+
+3. (GET) /users - this is protected route. It will return all users. Only authorized users can get data otherwisw it will
+throw 403 forbidden
+
+
+headers : {
+    Authorization : token
+}
