@@ -1,0 +1,15 @@
+Implemented CRUD Operation using mongoose.
+
+1. GET - /todo/
+
+2. POST - /todo/addTodo
+Body {
+    "note" : "todo list content"
+}   
+
+3. PUT - /todo/updateTodo/:id
+Body {
+    "note" : "updated todo list content"
+}   
+
+4. Delete - /todo/deleteTodo/:id
