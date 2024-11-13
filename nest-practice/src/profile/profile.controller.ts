@@ -1,30 +1,32 @@
-import { createReadStream } from "fs";
-import { join } from "path";
-import { Controller, Get, Post, UploadedFile, UseInterceptors, Res, Param } from "@nestjs/common";
+import { Controller, Get, Post, UploadedFile, UseInterceptors, Res, Param, BadRequestException } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { Response } from "express";
-
+import { profileFileFilter } from "../shared/file-filters";
 import { ProfileService } from "./profile.service";
+import { messages, profileDestination, profileFileLimit } from "./constants";
 
 @Controller("profile")
-@UseInterceptors(FileInterceptor("file", { dest: "uploads" }))
 export class ProfileController {
     constructor(private readonly profileService: ProfileService) {}
 
     @Post("upload")
-    uploadProfile(@UploadedFile() file: Express.Multer.File) {
+    @UseInterceptors(
+        FileInterceptor("file", {
+            dest: profileDestination,
+            limits: {
+                fileSize: profileFileLimit,
+            },
+            fileFilter: profileFileFilter,
+        }),
+    )
+    async uploadProfile(@UploadedFile() file: Express.Multer.File) {
+        if (!file) return new BadRequestException(messages.error.FileIsRequired);
+
         return this.profileService.uploadProfile(file);
     }
 
     @Get("/:id")
-    async getProfile(@Res() res: Response, @Param("id") id: string) {
-        const profilePath = await this.profileService.viewProfile(id);
-
-        if (profilePath.trim() === "") {
-            return res.json({ message: "no profile found" });
-        }
-
-        const file = createReadStream(join(profilePath));
-        file.pipe(res);
+    async getProfileImage(@Res() res: Response, @Param("id") id: string) {
+        return this.profileService.getProfileImage(res, id);
     }
 }

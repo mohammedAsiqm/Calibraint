@@ -1,26 +1,36 @@
-import { Model, Types} from "mongoose";
-import { Injectable } from "@nestjs/common";
+import { readFile, unlink } from "fs/promises";
+import { Model, Types } from "mongoose";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
+import { Response } from "express";
 import { Profile } from "./profile.schema";
-
+import { messages } from "./constants";
 
 @Injectable()
 export class ProfileService {
     constructor(@InjectModel(Profile.name) private readonly profileModel: Model<Profile>) {}
 
-    async uploadProfile(file: object) {
+    async uploadProfile(file: Express.Multer.File) {
+        const fileBuffer = await readFile(file.path);
+        file.buffer = fileBuffer;
+
+        await unlink(file.path);
+
         return (await this.profileModel.create(file)).save();
     }
 
-    async viewProfile( id: string) : Promise<string> {
-        const _id = new Types.ObjectId(id)
+    async getProfileImage(res: Response, id: string) {
+        const _id = new Types.ObjectId(id);
 
-        const profile = await this.profileModel.findOne({_id})
+        const profile = await this.profileModel.findOne({ _id });
 
-        if(!profile){ 
-            return ""
+        if (!profile) {
+            throw new NotFoundException(messages.error.ProfileNotFound);
         }
-        
-        return profile.path
+
+        const bufferStream = Buffer.from(profile.buffer);
+
+        res.write(bufferStream);
+        res.end();
     }
 }

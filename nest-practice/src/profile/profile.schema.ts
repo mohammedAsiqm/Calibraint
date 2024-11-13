@@ -26,6 +26,9 @@ export class Profile extends Document {
 
     @Prop()
     destination: string;
+
+    @Prop()
+    buffer: Buffer;
 }
 
 export const ProfileSchema = SchemaFactory.createForClass(Profile);
